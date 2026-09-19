@@ -1,15 +1,18 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import WelcomeScreen from './src/screens/WelcomeScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import RootNavigator from './src/navigation/RootNavigator';
+
+import './src/lib/firebase';
 
 export default function App() {
   return (
-    <>
-      <StatusBar style="light" />
-      <WelcomeScreen
-        onCreateAccount={() => console.log('[Welcome] Create account tapped')}
-        onLogin={() => console.log('[Welcome] Log in tapped')}
-      />
-    </>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        <RootNavigator />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
