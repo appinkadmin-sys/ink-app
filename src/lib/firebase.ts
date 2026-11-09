@@ -9,17 +9,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCn3RgE60I3UURYqDFzP9C-s84qKOUNnh0",
+  authDomain: "ink-app-f8f0b.firebaseapp.com",
+  projectId: "ink-app-f8f0b",
+  storageBucket: "ink-app-f8f0b.firebasestorage.app",
+  messagingSenderId: "425944087496",
+  appId: "1:425944087496:android:219fb8ba7603b5db675efd",
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// This is the fix: Check if we are on web or mobile
 export const auth = Platform.OS === 'web'
   ? initializeAuth(app, {})
   : initializeAuth(app, {
