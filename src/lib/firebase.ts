@@ -19,7 +19,6 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Use standard getAuth for web to avoid invalid-api-key, and initializeAuth for mobile
 export const auth = Platform.OS === 'web'
   ? getAuth(app)
   : initializeAuth(app, {
