@@ -25,7 +25,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Publish update
-        run: eas update --branch preview --message "Auto update from GitHub"
+        run: npx eas update --branch preview --message "Auto update from GitHub" --no-bytecode
