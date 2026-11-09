@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "425944087496",
+    "project_id": "ink-app-f8f0b",
+    "storage_bucket": "ink-app-f8f0b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425944087496:android:219fb8ba7603b5db675efd",
+        "android_client_info": {
+          "package_name": "com.inksocial.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "425944087496-h5bmqid2glk8jjvg11cp35h3rkalhnv5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCn3RgE60I3UURYqDFzP9C-s84qKOUNnh0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "425944087496-h5bmqid2glk8jjvg11cp35h3rkalhnv5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "425944087496-g6i9dq5jo06mis6l4cm3ei8rs8q7k8su.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.inksocial.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
