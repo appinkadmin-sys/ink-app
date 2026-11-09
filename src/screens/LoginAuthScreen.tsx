@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
@@ -9,24 +9,39 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { useTheme } from '../theme';
+import { useAuth } from '../hooks/useAuth';
 
 export default function LoginAuthScreen() {
   const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { login } = useAuth();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValid = identifier.trim().length >= 3 && password.length >= 6;
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!isValid) return;
+    
     setError(null);
-    console.log('[LoginAuth] Would log in:', { identifier, password });
-    // TODO: Firestore username lookup + signInWithEmailAndPassword
-    navigation.navigate('Home');
+    setIsLoading(true);
+
+    try {
+      // Note: If 'identifier' is a username, you would look up the email in Firestore first.
+      // For now, we assume they are logging in with their email.
+      await login(identifier.trim(), password);
+      
+      // If successful, the RootNavigator will automatically switch to the Home screen because the auth state changes.
+    } catch (err: any) {
+      // Show the Firebase error (e.g., "auth/wrong-password")
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -84,7 +99,7 @@ export default function LoginAuthScreen() {
               lineHeight: 24,
             }}
           >
-            Use your username or email.
+            Use your email.
           </Text>
         </View>
 
@@ -97,10 +112,10 @@ export default function LoginAuthScreen() {
           }}
         >
           <Input
-            label="USERNAME OR EMAIL"
+            label="EMAIL"
             value={identifier}
             onChangeText={setIdentifier}
-            placeholder="johndoe or you@example.com"
+            placeholder="you@example.com"
           />
 
           <Input
@@ -113,9 +128,9 @@ export default function LoginAuthScreen() {
           />
 
           <Button
-            label="Log in"
+            label={isLoading ? "Logging in..." : "Log in"}
             onPress={handleLogin}
-            disabled={!isValid}
+            disabled={!isValid || isLoading}
             style={{ marginTop: spacing.md }}
           />
 
