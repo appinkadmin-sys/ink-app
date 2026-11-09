@@ -1,11 +1,16 @@
 {
   "expo": {
-    "name": "Ink",
+    "name": "Ink.",
     "slug": "ink-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "jsEngine": "jsc",
+    "updates": {
+      "url": "https://u.expo.dev/7e0a4518-4f1c-42d7-a5ad-e6a8dc22b60d"
+    },
+    "runtimeVersion": "1.0.0",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -52,6 +57,7 @@
     "plugins": [
       "expo-image",
       "expo-notifications",
+      "expo-updates",
       [
         "expo-image-picker",
         {
