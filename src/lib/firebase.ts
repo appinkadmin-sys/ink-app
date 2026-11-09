@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -19,8 +19,9 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
+// Use standard getAuth for web to avoid invalid-api-key, and initializeAuth for mobile
 export const auth = Platform.OS === 'web'
-  ? initializeAuth(app, {})
+  ? getAuth(app)
   : initializeAuth(app, {
       persistence: getReactNativePersistence(AsyncStorage),
     });
