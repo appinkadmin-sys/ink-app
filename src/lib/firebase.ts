@@ -19,14 +19,13 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Platform-specific Auth initialization
+// This is the fix: Check if we are on web or mobile
 export const auth = Platform.OS === 'web'
   ? initializeAuth(app, {})
   : initializeAuth(app, {
       persistence: getReactNativePersistence(AsyncStorage),
     });
 
-// Firestore with offline persistence
 export const db = initializeFirestore(app, {
   localCache:
     Platform.OS === 'web'
