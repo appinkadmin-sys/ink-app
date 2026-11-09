@@ -1,16 +1,18 @@
+import { useColorScheme } from 'react-native';
+
 export const colors = {
   // Ink brand
   base: '#DC2626',        // crimson
   baseDark: '#991B1B',
   baseLight: '#F87171',
 
-  // Surfaces
+  // Surfaces (Dark mode defaults)
   background: '#02040A',  // obsidian
   surface: '#0F1117',
   surfaceAlt: '#1A1D24',
   border: '#1F232B',
 
-  // Text
+  // Text (Dark mode defaults)
   text: '#FAFAFA',        // chalk
   textMuted: '#8A8F98',
   textSubtle: '#4B5563',
@@ -20,11 +22,15 @@ export const colors = {
   success: '#22C55E',
   warning: '#F59E0B',
 
-  // Light mode (later)
+  // Light mode overrides
   light: {
     background: '#FAFAFA',
     surface: '#FFFFFF',
+    surfaceAlt: '#F4F4F5',
+    border: '#E4E4E7',
     text: '#02040A',
+    textMuted: '#52525B',
+    textSubtle: '#A1A1AA',
   },
 };
 
@@ -54,9 +60,31 @@ export const typography = {
   display: 44,
 };
 
-export const theme = { colors, spacing, radii, typography };
-export type Theme = typeof theme;
+// Define the shape of our Theme
+export type Theme = {
+  colors: Omit<typeof colors, 'light'> & typeof colors.light;
+  spacing: typeof spacing;
+  radii: typeof radii;
+  typography: typeof typography;
+  isDark: boolean;
+};
 
 export function useTheme(): Theme {
-  return theme;
+  // Automatically checks if the phone is in Dark or Light mode
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
+
+  // If it's light mode, we merge the light overrides into the main colors
+  const activeColors = isDark 
+    ? colors 
+    : { ...colors, ...colors.light };
+
+  return {
+    // We remove the 'light' object from the final return so it stays clean
+    colors: activeColors as any, 
+    spacing,
+    radii,
+    typography,
+    isDark,
+  };
 }
