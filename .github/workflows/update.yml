@@ -28,4 +28,4 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Publish update
-        run: npx eas update --branch preview --message "Auto update from GitHub" --no-bytecode
+        run: npx eas update --branch preview --message "Auto update from GitHub" --no-bytecode 
