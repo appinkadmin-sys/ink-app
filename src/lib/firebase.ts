@@ -19,10 +19,12 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Auth with AsyncStorage persistence
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Platform-specific Auth initialization
+export const auth = Platform.OS === 'web'
+  ? initializeAuth(app, {})
+  : initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
 
 // Firestore with offline persistence
 export const db = initializeFirestore(app, {
