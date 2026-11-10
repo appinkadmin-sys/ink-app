@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { Pressable, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../theme';
 
 interface ButtonProps {
@@ -21,26 +21,33 @@ export default function Button({
   style,
   textStyle
 }: ButtonProps) {
-  const { colors, radii, typography, spacing } = useTheme();
+  const { colors, radii, typography, spacing, shadows } = useTheme();
 
   const getBackgroundColor = () => {
     if (disabled) return colors.surfaceAlt;
-    if (variant === 'primary') return colors.brand; // Crimson
-    if (variant === 'secondary') return colors.text; // Black
-    return 'transparent'; // Outline
+    if (variant === 'primary') return colors.brand; 
+    if (variant === 'secondary') return colors.surfaceAlt; 
+    return 'transparent'; 
   };
 
   const getTextColor = () => {
     if (disabled) return colors.textSubtle;
-    if (variant === 'primary' || variant === 'secondary') return '#FFFFFF';
-    return colors.text; // Black text for outline
+    if (variant === 'primary') return '#FFFFFF'; 
+    return colors.text; 
+  };
+
+  const getShadow = () => {
+    if (disabled || variant !== 'primary') return {};
+    return shadows.brand;
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={[
+      accessibilityRole="button"
+      accessibilityState={{ disabled, busy: loading }}
+      style={({ pressed }) => [
         styles.button,
         {
           backgroundColor: getBackgroundColor(),
@@ -49,7 +56,9 @@ export default function Button({
           paddingHorizontal: spacing.lg,
           borderWidth: variant === 'outline' ? 1 : 0,
           borderColor: colors.border,
+          opacity: pressed ? 0.85 : 1,
         },
+        getShadow(),
         style,
       ]}
     >
@@ -70,7 +79,7 @@ export default function Button({
           {title}
         </Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
