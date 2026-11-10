@@ -32,7 +32,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   const { user, loading } = useAuth();
 
-  // 1. Wait for Firebase to check if the user is logged in
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#02040A', justifyContent: 'center', alignItems: 'center' }}>
@@ -49,12 +48,13 @@ export default function RootNavigator() {
       }}
     >
       {user ? (
-        // 2. User is logged in
         <>
+          <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
+          <Stack.Screen name="Privacy" component={PrivacyScreen} />
         </>
       ) : (
-        // 3. User is NOT logged in
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen
@@ -78,9 +78,6 @@ export default function RootNavigator() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
           <Stack.Screen name="CheckEmail" component={CheckEmailScreen} />
-          <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
-          <Stack.Screen name="Terms" component={TermsScreen} />
-          <Stack.Screen name="Privacy" component={PrivacyScreen} />
         </>
       )}
     </Stack.Navigator>
