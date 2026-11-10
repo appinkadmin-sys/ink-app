@@ -34,7 +34,7 @@ export default function Input({ label, error, style, ...props }: InputProps) {
         {...props}
       />
       {error && (
-        <Text style={[styles.error, { color: colors.danger, fontSize: typography.body - 2 }]}>
+        <Text style={[styles.error, { color: colors.danger, fontSize: typography.caption }]}>
           {error}
         </Text>
       )}
