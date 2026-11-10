@@ -1,190 +1,237 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  Image, 
-  TouchableOpacity, 
-  ActivityIndicator,
-  SafeAreaView
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Animated,
+  PanResponder,
+  Dimensions,
+  TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import { useTheme } from '../theme';
 
+const { width } = Dimensions.get('window');
+const SWIPE_THRESHOLD = 0.25 * width;
+
 // --- Types ---
-type Story = {
+type StudyCard = {
   id: string;
   name: string;
-  avatar: string;
-};
-
-type Post = {
-  id: string;
-  user: { name: string; avatar: string };
+  subject: string;
   image: string;
-  caption: string;
-  likes: number;
-  comments: number;
+  bio: string;
 };
 
-// --- Mock Data (We will connect this to Firestore later) ---
-const MOCK_STORIES: Story[] = [
-  { id: '1', name: 'Amara', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: '2', name: 'Kofi', avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: '3', name: 'Zola', avatar: 'https://i.pravatar.cc/150?img=3' },
-  { id: '4', name: 'Sipho', avatar: 'https://i.pravatar.cc/150?img=4' },
-  { id: '5', name: 'Lerato', avatar: 'https://i.pravatar.cc/150?img=5' },
-];
-
-const MOCK_POSTS: Post[] = [
+// --- Mock Data ---
+const MOCK_CARDS: StudyCard[] = [
   {
     id: '1',
-    user: { name: 'Amara N.', avatar: 'https://i.pravatar.cc/150?img=1' },
+    name: 'Amara N.',
+    subject: 'Calculus & Physics',
     image: 'https://images.unsplash.com/photo-1531123897727-8f129e1bf98c?q=80&w=800&auto=format&fit=crop',
-    caption: 'Late night study session. Calculus is kicking my butt but we move. 📚📉',
-    likes: 124,
-    comments: 12,
+    bio: 'Struggling with integration. Let’s match and study.',
   },
   {
     id: '2',
-    user: { name: 'Kofi M.', avatar: 'https://i.pravatar.cc/150?img=2' },
-    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop',
-    caption: 'Library vibes today. Anyone want to join for a group study?',
-    likes: 89,
-    comments: 5,
+    name: 'Kofi M.',
+    subject: 'Politics & History',
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop',
+    bio: 'Essay season is here. Looking for a study partner.',
+  },
+  {
+    id: '3',
+    name: 'Zola T.',
+    subject: 'Business & Accounting',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop',
+    bio: 'Need help with financial statements. Let’s link.',
   },
 ];
 
 export default function HomeScreen() {
   const { colors, spacing, radii, typography } = useTheme();
-  const [loading, setLoading] = useState(true);
+  const [cards, setCards] = useState<StudyCard[]>(MOCK_CARDS);
 
-  // Simulate network fetch
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Animated values for the top card
+  const position = useRef(new Animated.ValueXY()).current;
 
-  // --- Skeleton Loader Component ---
-  const Skeleton = () => (
-    <View style={styles.skeletonContainer}>
-      <View style={styles.skeletonHeader}>
-        <View style={[styles.skeletonAvatar, { backgroundColor: colors.surfaceAlt }]} />
-        <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: 100 }]} />
-      </View>
-      <View style={[styles.skeletonImage, { backgroundColor: colors.surfaceAlt }]} />
-      <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: '80%' }]} />
-      <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: '60%', marginTop: 8 }]} />
-    </View>
-  );
+  // PanResponder to handle the swipe physics
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gesture) => {
+        position.setValue({ x: gesture.dx, y: gesture.dy });
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx > SWIPE_THRESHOLD) {
+          forceSwipe('right');
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          forceSwipe('left');
+        } else {
+          resetPosition();
+        }
+      },
+    })
+  ).current;
 
-  // --- Header Component ---
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <Text style={[styles.logo, { color: colors.brand, fontSize: typography.h2 }]}>
-        Ink.
-      </Text>
-      <View style={styles.headerIcons}>
-        <TouchableOpacity style={styles.iconBtn}>
-          <Text style={{ fontSize: 20 }}>🔔</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const forceSwipe = (direction: 'right' | 'left') => {
+    const x = direction === 'right' ? width + 100 : -width - 100;
+    Animated.timing(position, {
+      toValue: { x, y: 0 },
+      duration: 250,
+      useNativeDriver: false,
+    }).start(() => onSwipeComplete(direction));
+  };
 
-  // --- Stories Row Component ---
-  const renderStories = () => (
-    <View style={styles.storiesWrapper}>
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={MOCK_STORIES}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: spacing.md }}
-        renderItem={({ item }) => (
-          <View style={styles.storyItem}>
-            <View style={[styles.storyRing, { borderColor: colors.brand }]}>
-              <Image source={{ uri: item.avatar }} style={styles.storyAvatar} />
-            </View>
-            <Text style={[styles.storyName, { color: colors.textMuted, fontSize: typography.body - 2 }]}>
-              {item.name}
-            </Text>
-          </View>
-        )}
-      />
-    </View>
-  );
+  const onSwipeComplete = (direction: 'right' | 'left') => {
+    if (direction === 'right') {
+      console.log('Matched with:', cards[0].name);
+      // Later: Save match to Firestore here
+    } else {
+      console.log('Skipped:', cards[0].name);
+    }
 
-  // --- Feed Post Component ---
-  const renderPost = ({ item }: { item: Post }) => (
-    <View style={styles.postContainer}>
-      {/* Post Header */}
-      <View style={styles.postHeader}>
-        <Image source={{ uri: item.user.avatar }} style={styles.postAvatar} />
-        <Text style={[styles.postUsername, { color: colors.text, fontSize: typography.body, fontWeight: '600' }]}>
-          {item.user.name}
-        </Text>
-      </View>
+    // Remove the top card
+    setCards((prev) => prev.slice(1));
+    position.setValue({ x: 0, y: 0 });
+  };
 
-      {/* Post Image */}
-      <Image source={{ uri: item.image }} style={styles.postImage} />
+  const resetPosition = () => {
+    Animated.spring(position, {
+      toValue: { x: 0, y: 0 },
+      useNativeDriver: false,
+    }).start();
+  };
 
-      {/* Post Actions */}
-      <View style={styles.postActions}>
-        <View style={styles.actionLeft}>
-          <TouchableOpacity style={styles.actionBtn}><Text style={{ fontSize: 24 }}>🤍</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}><Text style={{ fontSize: 24 }}>💬</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn}><Text style={{ fontSize: 24 }}>✈️</Text></TouchableOpacity>
+  // Interpolations for card rotation and opacity
+  const rotate = position.x.interpolate({
+    inputRange: [-width / 2, 0, width / 2],
+    outputRange: ['-10deg', '0deg', '10deg'],
+    extrapolate: 'clamp',
+  });
+
+  const likeOpacity = position.x.interpolate({
+    inputRange: [0, width / 4],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const nopeOpacity = position.x.interpolate({
+    inputRange: [-width / 4, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const renderCards = () => {
+    if (cards.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No more cards</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+            Check back later for more study partners.
+          </Text>
         </View>
-        <TouchableOpacity><Text style={{ fontSize: 24 }}>🔖</Text></TouchableOpacity>
-      </View>
+      );
+    }
 
-      {/* Post Footer */}
-      <View style={styles.postFooter}>
-        <Text style={[styles.likes, { color: colors.text, fontSize: typography.body, fontWeight: '600' }]}>
-          {item.likes} likes
-        </Text>
-        <Text style={[styles.caption, { color: colors.text, fontSize: typography.body }]}>
-          <Text style={{ fontWeight: '600' }}>{item.user.name} </Text>
-          {item.caption}
-        </Text>
-        <Text style={[styles.comments, { color: colors.textMuted, fontSize: typography.body - 2, marginTop: 4 }]}>
-          View all {item.comments} comments
-        </Text>
-      </View>
-    </View>
-  );
+    return cards
+      .map((item, index) => {
+        if (index === 0) {
+          // The top, swipeable card
+          return (
+            <Animated.View
+              key={item.id}
+              {...panResponder.panHandlers}
+              style={[
+                styles.cardContainer,
+                {
+                  transform: [
+                    { translateX: position.x },
+                    { translateY: position.y },
+                    { rotate: rotate },
+                  ],
+                },
+              ]}
+            >
+              <Image source={{ uri: item.image }} style={styles.cardImage} />
+              
+              {/* Like/Nope Indicators */}
+              <Animated.View style={[styles.likeBadge, { opacity: likeOpacity }]}>
+                <Text style={[styles.badgeText, { color: colors.brand, borderColor: colors.brand }]}>STUDY</Text>
+              </Animated.View>
+              <Animated.View style={[styles.nopeBadge, { opacity: nopeOpacity }]}>
+                <Text style={[styles.badgeText, { color: colors.textMuted, borderColor: colors.textMuted }]}>SKIP</Text>
+              </Animated.View>
 
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        {renderHeader()}
-        {renderStories()}
-        <Skeleton />
-        <Skeleton />
-      </SafeAreaView>
-    );
-  }
+              <View style={styles.cardInfo}>
+                <Text style={[styles.cardName, { color: colors.text, fontSize: typography.h2 }]}>
+                  {item.name}
+                </Text>
+                <Text style={[styles.cardSubject, { color: colors.brand, fontSize: typography.bodyLarge, fontWeight: '600' }]}>
+                  {item.subject}
+                </Text>
+                <Text style={[styles.cardBio, { color: colors.textMuted, fontSize: typography.body }]}>
+                  {item.bio}
+                </Text>
+              </View>
+            </Animated.View>
+          );
+        }
+
+        // The cards underneath (stacked)
+        return (
+          <View
+            key={item.id}
+            style={[
+              styles.cardContainer,
+              {
+                transform: [{ scale: 1 - index * 0.05 }, { translateY: index * 10 }],
+                zIndex: -index,
+                opacity: 1 - index * 0.2,
+              },
+            ]}
+          >
+            <Image source={{ uri: item.image }} style={styles.cardImage} />
+          </View>
+        );
+      })
+      .reverse(); // Reverse so the top card renders on top
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <FlatList
-        data={MOCK_POSTS}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <>
-            {renderStories()}
-          </>
-        }
-        renderItem={renderPost}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: spacing.xxl }}
-      />
-      
-      {/* Fixed Header (Absolute positioned so it stays on top) */}
-      <View style={[styles.fixedHeader, { backgroundColor: colors.background }]}>
-        {renderHeader()}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={[styles.logo, { color: colors.brand, fontSize: typography.h2 }]}>
+          Ink.
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted, fontSize: typography.body }]}>
+          Find a study partner
+        </Text>
       </View>
+
+      {/* Card Deck */}
+      <View style={styles.deckContainer}>{renderCards()}</View>
+
+      {/* Bottom Action Buttons */}
+      {cards.length > 0 && (
+        <View style={styles.actionContainer}>
+          <TouchableOpacity 
+            style={[styles.actionBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+            onPress={() => forceSwipe('left')}
+          >
+            <Text style={{ fontSize: 24, color: colors.textMuted }}>✕</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionBtn, { borderColor: colors.brand, backgroundColor: colors.brand }]}
+            onPress={() => forceSwipe('right')}
+          >
+            <Text style={{ fontSize: 24, color: '#FFFFFF' }}>🤍</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -193,126 +240,118 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  fixedHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    paddingTop: 50, // Adjust based on your notch/status bar
-  },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
+    paddingTop: 20,
     paddingBottom: 10,
+    alignItems: 'center',
   },
   logo: {
     fontWeight: '800',
     letterSpacing: -1,
   },
-  headerIcons: {
-    flexDirection: 'row',
+  subtitle: {
+    marginTop: 4,
   },
-  iconBtn: {
-    padding: 8,
-  },
-  storiesWrapper: {
-    marginTop: 60, // Pushes stories below the fixed header
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB', // Using raw hex to match theme border
-  },
-  storyItem: {
+  deckContainer: {
+    flex: 1,
     alignItems: 'center',
-    marginRight: 16,
-  },
-  storyRing: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2,
-    padding: 2,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
+    marginTop: 20,
   },
-  storyAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  cardContainer: {
+    position: 'absolute',
+    width: width * 0.85,
+    height: width * 1.3,
+    borderRadius: 24,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    overflow: 'hidden',
   },
-  storyName: {
-    marginTop: 2,
-  },
-  postContainer: {
-    marginBottom: 24,
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  postAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
-  },
-  postUsername: {},
-  postImage: {
+  cardImage: {
     width: '100%',
-    height: 400,
+    height: '100%',
     resizeMode: 'cover',
   },
-  postActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  cardInfo: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  actionLeft: {
-    flexDirection: 'row',
+  cardName: {
+    fontWeight: '700',
   },
-  actionBtn: {
-    marginRight: 16,
+  cardSubject: {
+    marginTop: 4,
   },
-  postFooter: {
-    paddingHorizontal: 16,
-  },
-  likes: {
-    marginBottom: 6,
-  },
-  caption: {
+  cardBio: {
+    marginTop: 8,
     lineHeight: 20,
   },
-  skeletonContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+  likeBadge: {
+    position: 'absolute',
+    top: 40,
+    left: 30,
+    transform: [{ rotate: '-15deg' }],
+    zIndex: 10,
   },
-  skeletonHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+  nopeBadge: {
+    position: 'absolute',
+    top: 40,
+    right: 30,
+    transform: [{ rotate: '15deg' }],
+    zIndex: 10,
   },
-  skeletonAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
-  },
-  skeletonText: {
-    height: 12,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  skeletonImage: {
-    width: '100%',
-    height: 300,
+  badgeText: {
+    fontSize: 32,
+    fontWeight: '800',
+    borderWidth: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 8,
-    marginBottom: 12,
+    letterSpacing: 2,
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 40,
+    gap: 30,
+  },
+  actionBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
 });
