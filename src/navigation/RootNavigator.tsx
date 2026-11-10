@@ -34,7 +34,8 @@ export default function RootNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#02040A', justifyContent: 'center', alignItems: 'center' }}>
+      // CHANGED: Background to White, Spinner stays Crimson
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#DC2626" />
       </View>
     );
@@ -44,7 +45,8 @@ export default function RootNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#02040A' },
+        // CHANGED: Background to White
+        contentStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
       {user ? (
