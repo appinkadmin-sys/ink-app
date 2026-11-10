@@ -14,6 +14,12 @@ import HomeScreen from '../screens/HomeScreen';
 import TermsScreen from '../screens/TermsScreen';
 import PrivacyScreen from '../screens/PrivacyScreen';
 
+// If you have these screens created, keep these imports.
+// If not, remove these imports and the <Stack.Screen> lines below.
+import SettingsScreen from '../screens/SettingsScreen';
+import AccountSummaryScreen from '../screens/AccountSummaryScreen';
+import PopiaRightsScreen from '../screens/PopiaRightsScreen';
+
 export type RootStackParamList = {
   Welcome: undefined;
   SignUp: undefined;
@@ -26,6 +32,8 @@ export type RootStackParamList = {
   Terms: undefined;
   Privacy: undefined;
   Settings: undefined;
+  AccountSummary: undefined;
+  PopiaRights: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,7 +41,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   const { user, loading } = useAuth();
 
-  // 1. Wait for Firebase to check if the user is logged in
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#02040A', justifyContent: 'center', alignItems: 'center' }}>
@@ -50,13 +57,17 @@ export default function RootNavigator() {
       }}
     >
       {user ? (
-        // 2. User is logged in
+        // User is logged in
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
-          {/* Add other authenticated screens here later (Settings, Chat, etc) */}
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="AccountSummary" component={AccountSummaryScreen} />
+          <Stack.Screen name="PopiaRights" component={PopiaRightsScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
+          <Stack.Screen name="Privacy" component={PrivacyScreen} />
         </>
       ) : (
-        // 3. User is NOT logged in
+        // User is NOT logged in
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen
