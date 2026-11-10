@@ -8,16 +8,16 @@ export const colors = {
 
   // 60% Dominant (Strict White)
   background: '#FFFFFF', 
-  surface: '#FFFFFF',      // Keeps cards clean and borderless
-  surfaceAlt: '#F9FAFB',   // Very subtle grey for input fields or active tabs
+  surface: '#FFFFFF',      
+  surfaceAlt: '#F9FAFB',   
 
   // 30% Secondary (Black & Greys)
-  text: '#000000',         // Pure black for maximum contrast
-  textMuted: '#4B5563',    // Dark grey for secondary text
-  textSubtle: '#9CA3AF',   // Light grey for placeholders
-  border: '#E5E7EB',       // Subtle border for separation
+  text: '#000000',         
+  textMuted: '#4B5563',    
+  textSubtle: '#9CA3AF',   
+  border: '#E5E7EB',       
 
-  // Semantic (Keep these standard)
+  // Semantic
   danger: '#DC2626',
   success: '#22C55E',
   warning: '#F59E0B',
@@ -49,7 +49,6 @@ export const typography = {
   display: 44,
 };
 
-// Define the shape of our Theme
 export type Theme = {
   colors: typeof colors;
   spacing: typeof spacing;
@@ -58,8 +57,7 @@ export type Theme = {
 };
 
 export function useTheme(): Theme {
-  // We are strictly enforcing Light mode for now based on the new design direction.
-  // You can add the dark mode switch back later if you want, but the UI is built for White.
+  // Strictly enforcing Light mode for the new White background design.
   return {
     colors,
     spacing,
