@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "jsEngine": "jsc",
     "updates": {
       "url": "https://u.expo.dev/7e0a4518-4f1c-42d7-a5ad-e6a8dc22b60d"
     },
@@ -19,7 +18,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.inksocial.app",
-      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "Ink uses your camera so you can take photos and videos to share with your friends.",
         "NSMicrophoneUsageDescription": "Ink uses your microphone so you can record audio for videos and voice notes.",
@@ -34,7 +32,6 @@
         "backgroundColor": "#02040A"
       },
       "package": "com.inksocial.app",
-      "googleServicesFile": "./google-services.json",
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
