@@ -1,73 +1,30 @@
-{
-  "expo": {
-    "name": "Ink.",
-    "slug": "ink-app",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "updates": {
-      "url": "https://u.expo.dev/7e0a4518-4f1c-42d7-a5ad-e6a8dc22b60d"
-    },
-    "runtimeVersion": "1.0.0",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#02040A"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.inksocial.app",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Ink uses your camera so you can take photos and videos to share with your friends.",
-        "NSMicrophoneUsageDescription": "Ink uses your microphone so you can record audio for videos and voice notes.",
-        "NSPhotoLibraryUsageDescription": "Ink needs access to your photos so you can upload them to your feed or chat.",
-        "NSLocationWhenInUseUsageDescription": "Ink uses your location to show you people and posts nearby.",
-        "NSContactsUsageDescription": "Ink uses your contacts to help you find friends who are already using the app."
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#02040A"
-      },
-      "package": "com.inksocial.app",
-      "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO",
-        "android.permission.READ_MEDIA_AUDIO",
-        "android.permission.READ_CONTACTS",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.VIBRATE"
-      ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-image",
-      "expo-notifications",
-      "expo-updates",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow Ink to access your photos so you can share them.",
-          "cameraPermission": "Allow Ink to use your camera to take new photos and videos."
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow Ink to use your location to find nearby people."
-        }
-      ]
-    ]
+import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import RootNavigator from './src/navigation/RootNavigator';
+import { useAuth } from './src/hooks/useAuth';
+
+import './src/lib/firebase';
+
+export default function App() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#02040A', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#DC2626" />
+      </View>
+    );
   }
+
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="auto" />
+        <RootNavigator />
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
 }
