@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '../theme';
 
 interface AvatarProps {
@@ -18,17 +19,22 @@ export default function Avatar({ uri, size = 48, initials = '?' }: AvatarProps) 
         {
           width: size,
           height: size,
-          borderRadius: radii.pill, // Makes it a perfect circle
+          borderRadius: radii.pill,
           backgroundColor: colors.surfaceAlt,
           borderColor: colors.border,
         },
       ]}
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.image} />
+        <Image 
+          source={{ uri }} 
+          style={styles.image} 
+          contentFit="cover" 
+          transition={200}
+        />
       ) : (
         <Text style={[styles.initials, { color: colors.text, fontSize: size * 0.4 }]}>
-          {initials.toUpperCase()}
+          {initials.slice(0, 2).toUpperCase()}
         </Text>
       )}
     </View>
