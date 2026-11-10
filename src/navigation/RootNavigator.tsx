@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../theme';
 
 import WelcomeScreen from '../screens/WelcomeScreen';
 import SignUpScreen from '../screens/SignUpScreen';
@@ -27,26 +27,24 @@ export type RootStackParamList = {
   Privacy: undefined;
 };
 
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, T>;
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const { colors } = useTheme();
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      // CHANGED: Background to White, Spinner stays Crimson
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#DC2626" />
-      </View>
-    );
-  }
+  // App.tsx handles the initial loading state, so we just return null here
+  // to prevent the dark/white flash.
+  if (loading) return null;
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        // CHANGED: Background to White
-        contentStyle: { backgroundColor: '#FFFFFF' },
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       {user ? (
