@@ -1,110 +1,61 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  type KeyboardTypeOptions,
-  type TextInputProps,
-} from 'react-native';
-import { Eye, EyeOff } from 'lucide-react-native';
+import React from 'react';
+import { TextInput, TextInputProps, View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 
-interface InputProps {
+interface InputProps extends TextInputProps {
   label?: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  secureTextEntry?: boolean;
-  keyboardType?: KeyboardTypeOptions;
-  autoCapitalize?: TextInputProps['autoCapitalize'];
-  autoCorrect?: boolean;
-  error?: string | null;
-  maxLength?: number;
+  error?: string;
 }
 
-export default function Input({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  secureTextEntry = false,
-  keyboardType = 'default',
-  autoCapitalize = 'none',
-  autoCorrect = false,
-  error,
-  maxLength,
-}: InputProps) {
-  const { colors, spacing, radii, typography } = useTheme();
-  const [hidden, setHidden] = useState(secureTextEntry);
+export default function Input({ label, error, style, ...props }: InputProps) {
+  const { colors, radii, typography, spacing } = useTheme();
 
   return (
-    <View style={{ marginBottom: spacing.md }}>
+    <View style={styles.container}>
       {label && (
-        <Text
-          style={{
-            color: colors.textMuted,
-            fontSize: 13,
-            fontWeight: '600',
-            marginBottom: spacing.xs + 2,
-            letterSpacing: 0.3,
-          }}
-        >
+        <Text style={[styles.label, { color: colors.text, fontSize: typography.body }]}>
           {label}
         </Text>
       )}
-
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: colors.surfaceAlt,
-          borderWidth: error ? 1.5 : 1,
-          borderColor: error ? colors.danger : colors.border,
-          borderRadius: radii.md,
-          paddingHorizontal: spacing.md,
-        }}
-      >
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={colors.textSubtle}
-          secureTextEntry={hidden}
-          keyboardType={keyboardType}
-          autoCapitalize={autoCapitalize}
-          autoCorrect={autoCorrect}
-          maxLength={maxLength}
-          style={{
-            flex: 1,
+      <TextInput
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surfaceAlt,
             color: colors.text,
+            borderRadius: radii.md,
+            borderColor: error ? colors.danger : colors.border,
+            padding: spacing.md,
             fontSize: typography.bodyLarge,
-            paddingVertical: spacing.md,
-          }}
-        />
-
-        {secureTextEntry && (
-          <Pressable onPress={() => setHidden((h) => !h)} hitSlop={10}>
-            {hidden ? (
-              <EyeOff size={20} color={colors.textMuted} />
-            ) : (
-              <Eye size={20} color={colors.textMuted} />
-            )}
-          </Pressable>
-        )}
-      </View>
-
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.textSubtle}
+        {...props}
+      />
       {error && (
-        <Text
-          style={{
-            color: colors.danger,
-            fontSize: 12,
-            marginTop: spacing.xs + 2,
-          }}
-        >
+        <Text style={[styles.error, { color: colors.danger, fontSize: typography.body - 2 }]}>
           {error}
         </Text>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+    width: '100%',
+  },
+  label: {
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  input: {
+    borderWidth: 1,
+  },
+  error: {
+    marginTop: 4,
+    marginLeft: 4,
+  },
+});
