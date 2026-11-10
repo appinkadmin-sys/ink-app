@@ -1,30 +1,30 @@
-import { useColorScheme, Platform } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 export const colors = {
   // 10% Accent (Crimson)
   brand: '#DC2626',
   brandDark: '#991B1B',
   brandLight: '#F87171',
-  brandGlow: 'rgba(220, 38, 38, 0.15)', // For glowing shadows on primary buttons
+  brandGlow: 'rgba(220, 38, 38, 0.15)',
 
   // 60% Dominant (Strict White & Off-White)
   background: '#FFFFFF', 
   surface: '#FFFFFF',      
-  surfaceAlt: '#F3F4F6',   // Slightly darker to separate cards from the background
+  surfaceAlt: '#F3F4F6',   
 
   // 30% Secondary (Silver & Greys)
   text: '#000000',         
   textMuted: '#4B5563',    
   textSubtle: '#9CA3AF',   
   border: '#E5E7EB',       
-  silver: '#E5E7EB',       // Explicit silver token for borders/dividers
+  silver: '#E5E7EB',       
 
   // Semantic
   danger: '#DC2626',
   success: '#22C55E',
   warning: '#F59E0B',
   
-  // Glassmorphism (For floating tab bars & overlays)
+  // Glassmorphism
   glass: 'rgba(255, 255, 255, 0.85)',
 };
 
@@ -40,23 +40,22 @@ export const spacing = {
 export const radii = {
   sm: 8,
   md: 12,
-  lg: 20,      // Increased for more modern, rounded cards
-  xl: 28,      // Increased for large feature cards
+  lg: 20,      
+  xl: 28,      
   pill: 999,
 };
 
 export const typography = {
   body: 15,
   bodyLarge: 17,
-  caption: 13, // Added for Input errors and metadata
+  caption: 13,
   h3: 22,
-  h2: 32,      // Scaled up for editorial headers
+  h2: 32,      
   h1: 42,
   display: 52,
 };
 
 export const shadows = {
-  // Modern, soft, high-end drop shadows
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -78,7 +77,6 @@ export const shadows = {
     shadowRadius: 24,
     elevation: 8,
   },
-  // Crimson glow for primary buttons
   brand: {
     shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 8 },
@@ -97,7 +95,6 @@ export type Theme = {
   scheme: 'light';
 };
 
-// Defined outside to prevent new object creation on every render
 const theme: Theme = {
   colors,
   spacing,
@@ -108,6 +105,5 @@ const theme: Theme = {
 };
 
 export function useTheme(): Theme {
-  // Strictly enforcing Light mode as per the design direction.
   return theme;
 }
