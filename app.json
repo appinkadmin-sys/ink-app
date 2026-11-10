@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "updates": {
       "url": "https://u.expo.dev/7e0a4518-4f1c-42d7-a5ad-e6a8dc22b60d"
     },
