@@ -1,29 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
-  ScrollView, 
+  FlatList, 
   Image, 
   Pressable, 
   Animated, 
   Dimensions,
-  Modal
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { 
-  Heart, 
-  MessageCircle, 
-  Send, 
-  Bookmark, 
-  PlusSquare, 
-  Search, 
-  Home, 
-  User,
-  X,
-  Wind
-} from 'lucide-react-native';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -31,205 +20,223 @@ import { useTheme } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-// --- REAL DATA STRUCTURE (Replace with Firebase later) ---
-const STORIES = [
-  { id: '1', name: 'My Story', avatar: 'https://i.pravatar.cc/150?img=1', isAdd: true },
-  { id: '2', name: 'alex_v', avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: '3', name: 'prodx', avatar: 'https://i.pravatar.cc/150?img=3' },
-];
+// --- TYPESCRIPT INTERFACES (Ready for Firebase) ---
+interface Story {
+  id: string;
+  username: string;
+  avatarUrl: string;
+  isAdd?: boolean;
+}
 
-const POSTS = [
-  { 
-    id: '1', 
-    user: 'alex_v', 
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop',
-    likes: 1240,
-    caption: 'Late night drive in the city.',
-    time: '2h ago'
-  },
-];
+interface Post {
+  id: string;
+  user: {
+    username: string;
+    avatarUrl: string;
+  };
+  imageUrl: string;
+  likes: number;
+  caption: string;
+  commentsCount: number;
+  timeAgo: string;
+}
 
 export default function HomeScreen() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // Animation refs
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const skeletonAnim = useRef(new Animated.Value(0.3)).current;
-  
-  // State
+  // State for real data
   const [isLoading, setIsLoading] = useState(true);
-  const [isSilent, setIsSilent] = useState(false); // Set to true to test the empty state
-  const [selectedPost, setSelectedPost] = useState<string | null>(null);
+  const [stories, setStories] = useState<Story[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  // Animation values for Skeleton Loader
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    // 1. Skeleton Pulse Animation
+    // 1. Start Skeleton Pulse Animation
     const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(skeletonAnim, { toValue: 0.7, duration: 800, useNativeDriver: true }),
-        Animated.timing(skeletonAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
       ])
     );
     pulse.start();
 
-    // 2. Simulate Data Fetching
-    setTimeout(() => {
-      pulse.stop();
+    // 2. Simulate Real API Fetch (Replace with Firebase call later)
+    const fetchData = async () => {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 2000)); 
+      
+      // This is the structure you will eventually fetch from Firestore
+      const fetchedStories: Story[] = [
+        { id: '1', username: 'My Story', avatarUrl: 'https://i.pravatar.cc/150?img=11', isAdd: true },
+        { id: '2', username: 'alex_v', avatarUrl: 'https://i.pravatar.cc/150?img=2' },
+        { id: '3', username: 'prodx', avatarUrl: 'https://i.pravatar.cc/150?img=3' },
+        { id: '4', username: 'study_buddy', avatarUrl: 'https://i.pravatar.cc/150?img=4' },
+        { id: '5', username: 'math_genius', avatarUrl: 'https://i.pravatar.cc/150?img=5' },
+      ];
+
+      const fetchedPosts: Post[] = [
+        {
+          id: '1',
+          user: { username: 'alex_v', avatarUrl: 'https://i.pravatar.cc/150?img=2' },
+          imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop',
+          likes: 1240,
+          caption: 'Late night study session. Calculus is kicking my ass. 📈',
+          commentsCount: 14,
+          timeAgo: '2h ago'
+        },
+        {
+          id: '2',
+          user: { username: 'prodx', avatarUrl: 'https://i.pravatar.cc/150?img=3' },
+          imageUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000&auto=format&fit=crop',
+          likes: 856,
+          caption: 'Taking a break from the books. Anyone up for a group chat?',
+          commentsCount: 42,
+          timeAgo: '5h ago'
+        }
+      ];
+
+      setStories(fetchedStories);
+      setPosts(fetchedPosts);
       setIsLoading(false);
-      // Fade in the feed or silent state
+      pulse.stop();
+
+      // 3. Fade in the feed
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-    }, 2000);
+    };
+
+    fetchData();
 
     return () => pulse.stop();
   }, []);
 
-  // Full screen post view
-  const renderFullScreenPost = () => {
-    if (!selectedPost) return null;
-    return (
-      <Modal visible={true} transparent={true} animationType="fade">
-        <View style={styles.fullScreenModal}>
-          <Pressable style={styles.closeButton} onPress={() => setSelectedPost(null)}>
-            <X size={32} color="#FFF" />
-          </Pressable>
-          <Image source={{ uri: selectedPost }} style={styles.fullScreenImage} resizeMode="contain" />
-          <View style={styles.fullScreenOverlay}>
-            <View style={{ flexDirection: 'row', gap: 20, marginBottom: 12 }}>
-              <Heart size={28} color="#FFF" />
-              <MessageCircle size={28} color="#FFF" />
-              <Send size={28} color="#FFF" />
-            </View>
-            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>alex_v</Text>
-            <Text style={{ color: '#FFF' }}>Late night drive in the city.</Text>
-          </View>
+  // --- SKELETON COMPONENT ---
+  const SkeletonCard = () => (
+    <Animated.View style={{ opacity: pulseAnim, marginBottom: spacing.xl }}>
+      {/* Post Header Skeleton */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: spacing.md }}>
+        <View style={[styles.skeletonCircle, { backgroundColor: colors.surfaceAlt }]} />
+        <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: 120, marginLeft: 10 }]} />
+      </View>
+      {/* Post Image Skeleton */}
+      <View style={[styles.skeletonImage, { backgroundColor: colors.surfaceAlt }]} />
+      {/* Post Text Skeleton */}
+      <View style={{ padding: spacing.md }}>
+        <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: '80%', marginBottom: 8 }]} />
+        <View style={[styles.skeletonText, { backgroundColor: colors.surfaceAlt, width: '60%' }]} />
+      </View>
+    </Animated.View>
+  );
+
+  // --- POST COMPONENT ---
+  const renderPost = ({ item }: { item: Post }) => (
+    <View style={[styles.postContainer, { borderBottomColor: colors.border }]}>
+      {/* Header */}
+      <View style={styles.postHeader}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Image source={{ uri: item.user.avatarUrl }} style={styles.avatar} />
+          <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>{item.user.username}</Text>
         </View>
-      </Modal>
-    );
-  };
+        <Pressable>
+          <MoreHorizontal size={20} color={colors.text} />
+        </Pressable>
+      </View>
+
+      {/* Image */}
+      <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+
+      {/* Actions */}
+      <View style={styles.actionRow}>
+        <View style={{ flexDirection: 'row', gap: 16 }}>
+          <Pressable><Heart size={24} color={colors.text} /></Pressable>
+          <Pressable><MessageCircle size={24} color={colors.text} /></Pressable>
+          <Pressable><Send size={24} color={colors.text} /></Pressable>
+        </View>
+        <Pressable><Bookmark size={24} color={colors.text} /></Pressable>
+      </View>
+
+      {/* Details */}
+      <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.md }}>
+        <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14, marginBottom: 4 }}>
+          {item.likes.toLocaleString()} likes
+        </Text>
+        <Text style={{ color: colors.text, fontSize: 14, lineHeight: 20 }}>
+          <Text style={{ fontWeight: '700' }}>{item.user.username} </Text>
+          {item.caption}
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6 }}>
+          View all {item.commentsCount} comments
+        </Text>
+        <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 4 }}>
+          {item.timeAgo}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style="light" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <Text style={styles.logoText}>INK<Text style={{ color: colors.base }}>.</Text></Text>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm, borderBottomColor: colors.border }]}>
+        <Text style={{ fontSize: 26, fontWeight: '900', letterSpacing: -1, color: colors.text }}>
+          INK<Text style={{ color: colors.base }}>.</Text>
+        </Text>
         <Pressable onPress={() => navigation.navigate('Chats' as any)}>
-           <MessageCircle size={26} color={colors.text} strokeWidth={2} />
+          <MessageCircle size={26} color={colors.text} strokeWidth={2} />
         </Pressable>
       </View>
 
-      {/* LOADING SKELETON */}
-      {isLoading && (
-        <Animated.View style={{ padding: 20, opacity: skeletonAnim }}>
-          <View style={{ flexDirection: 'row', gap: 16, marginBottom: 24 }}>
-            <View style={[styles.skeleton, { width: 68, height: 68, borderRadius: 34 }]} />
-            <View style={[styles.skeleton, { width: 68, height: 68, borderRadius: 34 }]} />
-            <View style={[styles.skeleton, { width: 68, height: 68, borderRadius: 34 }]} />
-          </View>
-          <View style={[styles.skeleton, { width: '100%', height: 300, borderRadius: 16 }]} />
-        </Animated.View>
-      )}
-
-      {/* FEED OR SILENT STATE */}
-      {!isLoading && (
+      {/* SKELETON LOADER */}
+      {isLoading ? (
+        <View style={{ flex: 1, paddingTop: spacing.md }}>
+          <SkeletonCard />
+          <SkeletonCard />
+        </View>
+      ) : (
+        // REAL FEED
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            
-            {/* STORIES ROW */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesContainer}>
-              {STORIES.map((story) => (
-                <View key={story.id} style={styles.storyItem}>
-                  <View style={[styles.storyRing, { borderColor: story.isAdd ? colors.border : colors.base }]}>
-                    <Image source={{ uri: story.avatar }} style={styles.storyImage} />
-                    {story.isAdd && (
-                      <View style={[styles.addIcon, { backgroundColor: colors.base, borderColor: colors.background }]}>
-                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>+</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={[styles.storyName, { color: colors.textMuted }]} numberOfLines={1}>
-                    {story.name}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-
-            {/* SILENT / EMPTY STATE */}
-            {isSilent ? (
-              <View style={styles.silentState}>
-                <View style={[styles.silentIcon, { backgroundColor: colors.surface }]}>
-                  <Wind size={40} color={colors.textMuted} />
-                </View>
-                <Text style={[styles.silentTitle, { color: colors.text }]}>Silent</Text>
-                <Text style={[styles.silentBody, { color: colors.textMuted }]}>
-                  Follow people to see their posts here.
-                </Text>
-                <Pressable style={[styles.findBtn, { backgroundColor: colors.base }]}>
-                  <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Find People</Text>
-                </Pressable>
-              </View>
-            ) : (
-              // ACTUAL FEED
-              POSTS.map((post) => (
-                <View key={post.id} style={[styles.postContainer, { borderBottomColor: colors.border }]}>
-                  
-                  {/* Post Header */}
-                  <View style={styles.postHeader}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <Image source={{ uri: post.avatar }} style={styles.postAvatar} />
-                      <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>{post.user}</Text>
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => item.id}
+            renderItem={renderPost}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={() => (
+              /* STORIES ROW */
+              <FlatList
+                horizontal
+                data={stories}
+                keyExtractor={(item) => item.id}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: spacing.md, paddingVertical: spacing.md }}
+                renderItem={({ item }) => (
+                  <View style={{ alignItems: 'center', marginRight: spacing.md, width: 72 }}>
+                    <View style={[
+                      styles.storyRing, 
+                      { borderColor: item.isAdd ? colors.border : colors.base }
+                    ]}>
+                      <Image source={{ uri: item.avatarUrl }} style={styles.storyAvatar} />
+                      {item.isAdd && (
+                        <View style={[styles.addIcon, { backgroundColor: colors.base, borderColor: colors.background }]}>
+                          <Plus size={12} color="#FFF" strokeWidth={3} />
+                        </View>
+                      )}
                     </View>
-                  </View>
-
-                  {/* Post Image (Tappable for Fullscreen) */}
-                  <Pressable onPress={() => setSelectedPost(post.image)}>
-                    <Image source={{ uri: post.image }} style={styles.postImage} />
-                  </Pressable>
-
-                  {/* Actions */}
-                  <View style={styles.actionRow}>
-                    <View style={{ flexDirection: 'row', gap: 16 }}>
-                      <Pressable><Heart size={24} color={colors.text} /></Pressable>
-                      <Pressable><MessageCircle size={24} color={colors.text} /></Pressable>
-                      <Pressable><Send size={24} color={colors.text} /></Pressable>
-                    </View>
-                    <Pressable><Bookmark size={24} color={colors.text} /></Pressable>
-                  </View>
-
-                  {/* Details */}
-                  <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                    <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14, marginBottom: 4 }}>
-                      {post.likes.toLocaleString()} likes
-                    </Text>
-                    <Text style={{ color: colors.text, fontSize: 14, lineHeight: 20 }}>
-                      <Text style={{ fontWeight: '700' }}>{post.user} </Text>
-                      {post.caption}
-                    </Text>
-                    <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 6 }}>
-                      {post.time}
+                    <Text style={{ color: colors.textMuted, fontSize: 11, marginTop: 6 }} numberOfLines={1}>
+                      {item.username}
                     </Text>
                   </View>
-                </View>
-              ))
+                )}
+              />
             )}
-          </ScrollView>
+          />
         </Animated.View>
       )}
-
-      {/* FULL SCREEN MODAL */}
-      {renderFullScreenPost()}
-
-      {/* BOTTOM TAB BAR */}
-      <View style={[styles.tabBar, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: insets.bottom || 16 }]}>
-        <Pressable><Home size={26} color={colors.text} /></Pressable>
-        <Pressable><Search size={26} color={colors.textMuted} /></Pressable>
-        <Pressable><PlusSquare size={26} color={colors.textMuted} /></Pressable>
-        <Pressable><MessageCircle size={26} color={colors.textMuted} /></Pressable>
-        <Pressable><User size={26} color={colors.textMuted} /></Pressable>
-      </View>
     </View>
   );
 }
@@ -240,87 +247,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 10,
-  },
-  logoText: {
-    fontSize: 26,
-    fontWeight: '900',
-    letterSpacing: -1,
-    color: '#FAFAFA',
-  },
-  skeleton: {
-    backgroundColor: '#1A1D24',
-  },
-  storiesContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  storyItem: {
-    alignItems: 'center',
-    marginHorizontal: 8,
-    width: 72,
+  skeletonCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
-  storyRing: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-    position: 'relative',
+  skeletonText: {
+    height: 12,
+    borderRadius: 4,
   },
-  storyImage: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-  },
-  addIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-  },
-  storyName: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  silentState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 32,
-  },
-  silentIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  silentTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  silentBody: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  findBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 999,
+  skeletonImage: {
+    width: width,
+    height: width,
   },
   postContainer: {
     borderBottomWidth: 1,
@@ -332,7 +273,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 12,
   },
-  postAvatar: {
+  avatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -347,34 +288,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 12,
   },
-  tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  storyRing: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2,
     alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  fullScreenModal: {
-    flex: 1,
-    backgroundColor: '#000',
     justifyContent: 'center',
+    position: 'relative',
   },
-  fullScreenImage: {
-    width: '100%',
-    height: '100%',
+  storyAvatar: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-  },
-  fullScreenOverlay: {
+  addIcon: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
     right: 0,
-    padding: 24,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
   },
 });
