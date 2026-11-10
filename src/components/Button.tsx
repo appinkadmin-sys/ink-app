@@ -1,81 +1,86 @@
 import React from 'react';
-import { Pressable, Text, ActivityIndicator, ViewStyle } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../theme';
 
-type ButtonVariant = 'primary' | 'outline' | 'ghost';
-
 interface ButtonProps {
-  label: string;
+  title: string;
   onPress: () => void;
-  variant?: ButtonVariant;
-  disabled?: boolean;
+  variant?: 'primary' | 'secondary' | 'outline';
   loading?: boolean;
-  icon?: React.ReactNode;
+  disabled?: boolean;
   style?: ViewStyle;
+  textStyle?: TextStyle;
 }
 
-export default function Button({
-  label,
-  onPress,
-  variant = 'primary',
+export default function Button({ 
+  title, 
+  onPress, 
+  variant = 'primary', 
+  loading = false, 
   disabled = false,
-  loading = false,
-  icon,
   style,
+  textStyle
 }: ButtonProps) {
-  const { colors, spacing, radii, typography } = useTheme();
+  const { colors, radii, typography, spacing } = useTheme();
 
-  const isDisabled = disabled || loading;
-
-  const containerStyle = (pressed: boolean): ViewStyle => {
-    const base: ViewStyle = {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: spacing.md + 2,
-      borderRadius: radii.pill,
-      opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
-    };
-
-    if (variant === 'primary') {
-      return { ...base, backgroundColor: colors.base };
-    }
-    if (variant === 'outline') {
-      return {
-        ...base,
-        borderWidth: 1.5,
-        borderColor: 'rgba(250, 250, 250, 0.35)',
-      };
-    }
-    return base; // ghost
+  const getBackgroundColor = () => {
+    if (disabled) return colors.surfaceAlt;
+    if (variant === 'primary') return colors.brand; // Crimson
+    if (variant === 'secondary') return colors.text; // Black
+    return 'transparent'; // Outline
   };
 
-  const textColor =
-    variant === 'primary' ? '#FFFFFF' : colors.text;
+  const getTextColor = () => {
+    if (disabled) return colors.textSubtle;
+    if (variant === 'primary' || variant === 'secondary') return '#FFFFFF';
+    return colors.text; // Black text for outline
+  };
 
   return (
-    <Pressable
-      onPress={isDisabled ? undefined : onPress}
-      disabled={isDisabled}
-      style={({ pressed }) => [containerStyle(pressed), style]}
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={[
+        styles.button,
+        {
+          backgroundColor: getBackgroundColor(),
+          borderRadius: radii.pill,
+          paddingVertical: spacing.md,
+          paddingHorizontal: spacing.lg,
+          borderWidth: variant === 'outline' ? 1 : 0,
+          borderColor: colors.border,
+        },
+        style,
+      ]}
     >
       {loading ? (
-        <ActivityIndicator color={textColor} />
+        <ActivityIndicator color={getTextColor()} />
       ) : (
-        <>
-          {icon ? <>{icon}</> : null}
-          <Text
-            style={{
-              color: textColor,
+        <Text
+          style={[
+            styles.text,
+            {
+              color: getTextColor(),
               fontSize: typography.bodyLarge,
-              fontWeight: variant === 'primary' ? '700' : '600',
-              marginLeft: icon ? 10 : 0,
-            }}
-          >
-            {label}
-          </Text>
-        </>
+              fontWeight: '600',
+            },
+            textStyle,
+          ]}
+        >
+          {title}
+        </Text>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  text: {
+    textAlign: 'center',
+  },
+});
