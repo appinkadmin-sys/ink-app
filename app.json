@@ -2,6 +2,7 @@
   "expo": {
     "name": "Ink.",
     "slug": "ink-app",
+    "scheme": "ink",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
