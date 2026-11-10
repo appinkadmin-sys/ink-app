@@ -1,68 +1,52 @@
 import React from 'react';
-import { View, Text, Image, Pressable, ViewStyle } from 'react-native';
+import { View, Image, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
 
 interface AvatarProps {
-  uri?: string | null;
-  name?: string;
+  uri?: string;
   size?: number;
-  onPress?: () => void;
-  style?: ViewStyle;
+  initials?: string;
 }
 
-export default function Avatar({
-  uri,
-  name,
-  size = 44,
-  onPress,
-  style,
-}: AvatarProps) {
-  const { colors } = useTheme();
+export default function Avatar({ uri, size = 48, initials = '?' }: AvatarProps) {
+  const { colors, radii } = useTheme();
 
-  const initials = name
-    ? name
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((w) => w[0]?.toUpperCase() ?? '')
-        .join('')
-    : '?';
-
-  const content = uri ? (
-    <Image
-      source={{ uri }}
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-    />
-  ) : (
+  return (
     <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: colors.base,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      style={[
+        styles.container,
+        {
+          width: size,
+          height: size,
+          borderRadius: radii.pill, // Makes it a perfect circle
+          backgroundColor: colors.surfaceAlt,
+          borderColor: colors.border,
+        },
+      ]}
     >
-      <Text
-        style={{
-          color: '#FFFFFF',
-          fontSize: size * 0.4,
-          fontWeight: '800',
-        }}
-      >
-        {initials}
-      </Text>
+      {uri ? (
+        <Image source={{ uri }} style={styles.image} />
+      ) : (
+        <Text style={[styles.initials, { color: colors.text, fontSize: size * 0.4 }]}>
+          {initials.toUpperCase()}
+        </Text>
+      )}
     </View>
   );
-
-  if (onPress) {
-    return (
-      <Pressable onPress={onPress} style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }, style]}>
-        {content}
-      </Pressable>
-    );
-  }
-
-  return <View style={style}>{content}</View>;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  initials: {
+    fontWeight: 'bold',
+  },
+});
